@@ -6,8 +6,15 @@ import { UserModel } from "../models/User";
 import { AuditLogModel } from "../models/AuditLog";
 import { AuditService } from "../services/audit.service";
 import Env from "../config/env";
-import { CouponModel } from "../models/Coupon"; // Assuming this exists or not used here
-import { ReferralRewardModel } from "../models/ReferralReward"; // Assuming this exists or not used here
+import { NotificationModel } from "../models/Notification";
+import { PayoutModel } from "../models/Payout";
+import { SettingsModel } from "../models/Settings";
+import { AdminPaymentDetailsModel } from "../models/AdminPaymentDetails";
+import { RewardVoucherModel } from "../models/RewardVoucher";
+// Services
+import { FraudDetectionService } from "../services/fraudDetection.service";
+import { VoucherValidationService } from "../services/voucherValidation.service";
+
 
 // Helper for type safety if needed, or just use `any` for quick prototyping as per existing style
 
@@ -23,7 +30,7 @@ export const listUsersForVerificationHandler = async (req: Request, res: Respons
 export const verifyUserIdentityHandler = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const { status, rejectionReason } = req.body; // status: "Verified" | "Rejected"
-    const { NotificationModel } = await import("../models/Notification");
+
 
     if (!["Verified", "Rejected"].includes(status)) {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid status. Use 'Verified' or 'Rejected'." });
@@ -96,7 +103,7 @@ export const listAllTransactionsHandler = async (req: Request, res: Response) =>
 export const verifyTransactionHandler = async (req: Request, res: Response) => {
     const { transactionId } = req.params;
     const { action, adminNote } = req.body; // "complete", "reject"
-    const { NotificationModel } = await import("../models/Notification");
+
 
     const transaction = await TransactionModel.findById(transactionId).populate("voucher");
     if (!transaction) {
@@ -111,7 +118,7 @@ export const verifyTransactionHandler = async (req: Request, res: Response) => {
         if (adminNote) transaction.adminNote = adminNote;
 
         // Create Payout Record for Seller
-        const { PayoutModel } = await import("../models/Payout");
+
         const seller = await UserModel.findById(transaction.seller);
 
         if (seller) {
@@ -172,7 +179,7 @@ export const verifyTransactionHandler = async (req: Request, res: Response) => {
 };
 
 export const getSettingsHandler = async (req: Request, res: Response) => {
-    const { SettingsModel } = await import("../models/Settings");
+
     let settings = await SettingsModel.findOne();
     if (!settings) {
         settings = await SettingsModel.create({
@@ -192,7 +199,7 @@ export const getSettingsHandler = async (req: Request, res: Response) => {
 };
 
 export const updateSettingsHandler = async (req: Request, res: Response) => {
-    const { SettingsModel } = await import("../models/Settings");
+
     const { platformFeePercent, companySharePercent, buyerDiscountPercent } = req.body;
 
     let settings = await SettingsModel.findOne();
@@ -210,7 +217,7 @@ export const updateSettingsHandler = async (req: Request, res: Response) => {
 
 // NEW: Get admin payment details for manual cash payments
 export const getAdminPaymentDetailsHandler = async (req: Request, res: Response) => {
-    const { AdminPaymentDetailsModel } = await import("../models/AdminPaymentDetails");
+
 
     let adminDetails = await AdminPaymentDetailsModel.findOne({ isActive: true });
 
@@ -230,7 +237,7 @@ export const getAdminPaymentDetailsHandler = async (req: Request, res: Response)
 
 // NEW: Update admin payment details (admin only)
 export const updateAdminPaymentDetailsHandler = async (req: Request, res: Response) => {
-    const { AdminPaymentDetailsModel } = await import("../models/AdminPaymentDetails");
+
 
     const { adminName, phoneNumber, upiId, bankName, accountNumber, ifscCode, accountHolderName, address, instructions } = req.body;
 
@@ -279,7 +286,7 @@ export const getPendingVouchersHandler = async (req: Request, res: Response) => 
 export const verifyVoucherHandler = async (req: Request, res: Response) => {
     const { voucherId } = req.params;
     const { action, rejectionReason } = req.body; // "approve", "reject"
-    const { NotificationModel } = await import("../models/Notification");
+
 
     const voucher = await VoucherModel.findById(voucherId);
     if (!voucher) {
@@ -348,8 +355,7 @@ export const listRiskVouchersHandler = async (req: Request, res: Response) => {
 // NEW: Manually trigger fraud analysis for a user or voucher
 export const triggerFraudAnalysisHandler = async (req: Request, res: Response) => {
     const { type, id } = req.body; // type: "user" | "voucher"
-    const { FraudDetectionService } = await import("../services/fraudDetection.service");
-    const { VoucherValidationService } = await import("../services/voucherValidation.service");
+
 
     if (type === "user") {
         const result = await FraudDetectionService.analyzeUser(id);
@@ -389,7 +395,7 @@ export const markAuditLogReadHandler = async (req: Request, res: Response) => {
 
 // Referrals List
 export const getReferralsListHandler = async (req: Request, res: Response) => {
-    const { UserModel } = await import("../models/User");
+
 
     const usersWithReferrals = await UserModel.find({
         $or: [
@@ -407,7 +413,7 @@ export const getReferralsListHandler = async (req: Request, res: Response) => {
 
 // Saved Vouchers Stats
 export const getSavedVouchersStatsHandler = async (req: Request, res: Response) => {
-    const { UserModel } = await import("../models/User");
+
 
     // Aggregation to find users who have saved items in their wishlist
     const usersWithSaved = await UserModel.find({ savedVouchers: { $not: { $size: 0 } } })
@@ -475,8 +481,7 @@ export const getTopBuyersHandler = async (req: Request, res: Response) => {
 export const assignRewardVoucherHandler = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const { title, brand, code, value } = req.body;
-    const { RewardVoucherModel } = await import("../models/RewardVoucher");
-    const { NotificationModel } = await import("../models/Notification");
+
 
     try {
         const reward = await RewardVoucherModel.create({
@@ -508,10 +513,10 @@ export const assignRewardVoucherHandler = async (req: Request, res: Response) =>
 // NEW: Get Rewards for a User
 export const getUserRewardsHandler = async (req: Request, res: Response) => {
     const { userId } = req.params; // Admin can view anyone's, User can view own
-    const { RewardVoucherModel } = await import("../models/RewardVoucher");
+
 
     // Access Control (Simplistic)
-    if (req.currentUser.role !== 'admin' && req.currentUser._id.toString() !== userId) {
+    if (!req.currentUser || (req.currentUser.role !== 'admin' && req.currentUser._id.toString() !== userId)) {
         return res.status(StatusCodes.FORBIDDEN).json({ message: "Access denied" });
     }
 

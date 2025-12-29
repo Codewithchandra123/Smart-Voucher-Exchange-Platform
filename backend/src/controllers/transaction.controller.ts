@@ -94,7 +94,7 @@ export const purchaseVoucherHandler = async (req: Request, res: Response) => {
             const admins = await UserModel.find({ role: "admin" });
             const adminNotifications = admins.map(admin => ({
                 user: admin._id,
-                message: `New Manual Payment Request: ${voucher.title} by ${req.currentUser.displayName}`,
+                message: `New Manual Payment Request: ${voucher.title} by ${req.currentUser?.displayName || 'User'}`,
                 type: "warning",
                 link: "/admin/verify-payments"
             }));
@@ -113,7 +113,7 @@ export const purchaseVoucherHandler = async (req: Request, res: Response) => {
         console.error("[purchaseVoucherHandler] Error creating transaction:", error);
 
         // UNLOCK on failure
-        await VoucherValidationService.unlockVoucher(voucherId);
+        if (voucherId) await VoucherValidationService.unlockVoucher(voucherId);
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to create transaction",

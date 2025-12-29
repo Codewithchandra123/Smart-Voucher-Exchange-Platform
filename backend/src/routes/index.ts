@@ -90,7 +90,7 @@ privateRouter.use(checkSuspension);
 
 privateRouter.get("/me/stats", getUserDashboardStats);
 privateRouter.get("/me/rewards", (req, res) => {
-  req.params.userId = (req.currentUser as any)._id.toString(); // Ensure string for strict comparison
+  (req.params as any).userId = (req.currentUser as any)._id.toString(); // Ensure string for strict comparison
   return getUserRewardsHandler(req, res);
 });
 privateRouter.put("/me", updateCurrentProfile);

@@ -20,22 +20,35 @@ export const submitReactivationHandler = async (req: Request, res: Response) => 
         const request = await ReactivationService.submitRequest(userId, explanation, proofUrls || []);
         res.status(StatusCodes.CREATED).json(request);
     } catch (error: any) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+        console.error("Submit Reactivation Error:", error);
+        res.status(StatusCodes.BAD_REQUEST).json({ message: error.message || "Failed to submit request" });
     }
 };
 
 export const listUserRequestsHandler = async (req: Request, res: Response) => {
-    const userId = req.currentUser?._id;
-    const requests = await ReactivationRequestModel.find({ user: userId }).sort({ createdAt: -1 });
-    res.json(requests);
+    try {
+        const userId = req.currentUser?._id;
+        if (!userId) return res.sendStatus(StatusCodes.UNAUTHORIZED);
+
+        const requests = await ReactivationRequestModel.find({ user: userId }).sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (error) {
+        console.error("List User Requests Error:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch requests" });
+    }
 };
 
 // Admin Handlers
 export const listAllRequestsHandler = async (req: Request, res: Response) => {
-    const requests = await ReactivationRequestModel.find()
-        .populate("user", "displayName email")
-        .sort({ status: 1, createdAt: -1 });
-    res.json(requests);
+    try {
+        const requests = await ReactivationRequestModel.find()
+            .populate("user", "displayName email")
+            .sort({ status: 1, createdAt: -1 });
+        res.json(requests);
+    } catch (error) {
+        console.error("List All Requests Error:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch admin requests" });
+    }
 };
 
 export const reviewRequestHandler = async (req: Request, res: Response) => {
@@ -46,9 +59,14 @@ export const reviewRequestHandler = async (req: Request, res: Response) => {
         const { requestId } = req.params;
         const { action, adminNote, penaltyAmount } = req.body;
 
-        const request = await ReactivationService.reviewRequest(adminId, requestId, action, adminNote, penaltyAmount);
+        if (!["APPROVE", "REJECT", "REQUIRE_PENALTY"].includes(action)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid action" });
+        }
+
+        const request = await ReactivationService.reviewRequest(adminId, requestId, action as "APPROVE" | "REJECT" | "REQUIRE_PENALTY", adminNote || "", penaltyAmount);
         res.json(request);
     } catch (error: any) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+        console.error("Review Request Error:", error);
+        res.status(StatusCodes.BAD_REQUEST).json({ message: error.message || "Failed to review request" });
     }
 };

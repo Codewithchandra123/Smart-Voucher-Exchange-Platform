@@ -8,7 +8,7 @@ import { loginSchema, registerSchema } from "../utils/validators";
 import Env from "../config/env";
 
 const generateToken = (userId: string) => {
-    return jwt.sign({ id: userId }, "supersecretkey123", {
+    return jwt.sign({ id: userId }, Env.jwtSecret, {
         expiresIn: "7d",
     });
 };
@@ -280,7 +280,7 @@ export const verifyOtpHandler = async (req: Request, res: Response) => {
     }
 
     // OTP Valid - Generate Reset Token
-    const resetToken = jwt.sign({ id: user._id, type: "password_reset" }, "supersecretkey123", { expiresIn: "15m" });
+    const resetToken = jwt.sign({ id: user._id, type: "password_reset" }, Env.jwtSecret, { expiresIn: "15m" });
 
     // Clear OTP logic is usually done after successful reset, but here we can keep it until reset
     // Or we allow OTP to be used once. Let's keep it for now but maybe mark it used? 
@@ -297,7 +297,7 @@ export const resetPasswordHandler = async (req: Request, res: Response) => {
     }
 
     try {
-        const decoded: any = jwt.verify(resetToken, "supersecretkey123");
+        const decoded: any = jwt.verify(resetToken, Env.jwtSecret);
         if (decoded.type !== "password_reset") throw new Error("Invalid token type");
 
         const user = await UserModel.findById(decoded.id);

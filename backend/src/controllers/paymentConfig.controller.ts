@@ -14,6 +14,7 @@ export const getPaymentConfig = async (req: Request, res: Response) => {
         }
         res.status(200).json(config);
     } catch (error) {
+        console.error("Error fetching payment config:", error);
         res.status(500).json({ message: 'Error fetching payment config', error });
     }
 };

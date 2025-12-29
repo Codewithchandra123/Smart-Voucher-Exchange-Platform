@@ -29,7 +29,7 @@ export const authMiddleware = async (
   }
 
   try {
-    const decoded = jwt.verify(token, "supersecretkey123") as JwtPayload;
+    const decoded = jwt.verify(token, Env.jwtSecret) as JwtPayload;
 
     const user = await UserModel.findById(decoded.id);
     if (!user) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { updateProfile, listUsers } from "../services/user.service";
-import { UserModel } from "../models/User";
+import { UserModel, IUser } from "../models/User";
 import { StatusCodes } from "http-status-codes";
 
 export const getCurrentProfile = async (req: Request, res: Response) => {
