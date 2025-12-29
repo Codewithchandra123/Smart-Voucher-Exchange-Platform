@@ -28,7 +28,6 @@
 //   process.exit(1);
 // });
 
-import "./types/express";
 import app from "./app";
 import Env from "./config/env";
 import mongoose from "mongoose";
