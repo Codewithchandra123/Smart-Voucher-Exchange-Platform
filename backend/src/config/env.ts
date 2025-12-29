@@ -11,7 +11,7 @@ const Env = {
   isDev: (process.env.NODE_ENV ?? "development") !== "production",
   port: numberFromEnv(process.env.PORT, 5000),
   mongoUri: process.env.MONGO_URI ?? "mongodb+srv://root:12345@cluster1.hhqtg3p.mongodb.net/vouchify",
-  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  frontendUrl: process.env.FRONTEND_URL ?? "https://smart-voucher-exchange-platform.vercel.app",
   defaultCurrency: process.env.DEFAULT_CURRENCY ?? "INR",
 
   // Auth
