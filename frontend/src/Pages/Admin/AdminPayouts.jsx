@@ -1,4 +1,6 @@
-// ... (keep existing imports)
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import client from '../../api/client';
 import {
     ArrowLeftIcon,
     CheckCircleIcon,
@@ -16,89 +18,8 @@ import {
     CalculatorIcon,
     InformationCircleIcon,
     PaperAirplaneIcon,
-    ChatBubbleLeftRightIcon // Added
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
-
-// ... (inside component)
-const [activeChatPayout, setActiveChatPayout] = useState(null);
-const [chatMessage, setChatMessage] = useState("");
-const [msgSending, setMsgSending] = useState(false);
-
-// ... (handleSendQuery function)
-const handleSendQuery = async (e) => {
-    e.preventDefault();
-    if (!chatMessage.trim()) return;
-    setMsgSending(true);
-    try {
-        await client.post(`/payouts/${activeChatPayout._id}/query`, { message: chatMessage });
-        setChatMessage("");
-
-        // Refresh data to show new message
-        const { data } = await client.get('/payouts');
-        setPayouts(data);
-
-        // Update the active modal data
-        const updated = data.find(p => p._id === activeChatPayout._id);
-        if (updated) setActiveChatPayout(updated);
-
-    } catch (error) {
-        console.error("Failed to send message", error);
-        alert("Failed to send message");
-    } finally {
-        setMsgSending(false);
-    }
-};
-
-// ... (In the table row)
-<td className="py-4 text-right">
-    <button
-        onClick={() => setActiveChatPayout(p)}
-        className="p-2 mr-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition relative"
-        title="Chat with User"
-    >
-        <ChatBubbleLeftRightIcon className="h-5 w-5" />
-        {p.queries?.length > 0 && <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>}
-    </button>
-    <span className="font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/10 rounded-r-lg px-2 py-1">₹{p.amount}</span>
-</td>
-
-// ... (Chat Modal at the end)
-{
-    activeChatPayout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setActiveChatPayout(null)}>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center">
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">Payout Support</h3>
-                        <p className="text-xs text-gray-500">Sales ID: {activeChatPayout.transaction?._id?.slice(-6)}</p>
-                    </div>
-                    <button onClick={() => setActiveChatPayout(null)}><XCircleIcon className="h-6 w-6 text-gray-500 hover:text-gray-900" /></button>
-                </div>
-                <div className="h-80 overflow-y-auto p-4 space-y-3 bg-white dark:bg-slate-900">
-                    {activeChatPayout.queries?.length === 0 && <p className="text-center text-gray-400 text-sm italic mt-10">No messages yet. Start a conversation.</p>}
-                    {activeChatPayout.queries?.map((q, i) => (
-                        <div key={i} className={`flex ${q.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${q.sender === 'admin' ? 'bg-indigo-600 text-white rounded-br-none shadow-md' : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-bl-none'}`}>
-                                <p>{q.message}</p>
-                                <p className={`text-[10px] mt-1 ${q.sender === 'admin' ? 'text-indigo-200' : 'text-gray-400'}`}>{new Date(q.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <form onSubmit={handleSendQuery} className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex gap-2">
-                    <input
-                        autoFocus
-                        value={chatMessage}
-                        onChange={e => setChatMessage(e.target.value)}
-                        placeholder="Type a reply..."
-                        className="flex-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full px-4 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                    <button type="submit" disabled={msgSending} className="p-2 bg-indigo-600 rounded-full text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"><PaperAirplaneIcon className="h-5 w-5" /></button>
-                </form>
-            </div>
-        </div>
-    )
-}
 import { Tab } from '@headlessui/react';
 
 function classNames(...classes) {
@@ -120,6 +41,11 @@ const AdminPayouts = () => {
 
     const [revenueWithdrawn, setRevenueWithdrawn] = useState(false);
 
+    // Chat State
+    const [activeChatPayout, setActiveChatPayout] = useState(null);
+    const [chatMessage, setChatMessage] = useState("");
+    const [msgSending, setMsgSending] = useState(false);
+
     useEffect(() => {
         fetchPayouts();
     }, []);
@@ -133,6 +59,30 @@ const AdminPayouts = () => {
             console.error("Failed to fetch payouts", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSendQuery = async (e) => {
+        e.preventDefault();
+        if (!chatMessage.trim()) return;
+        setMsgSending(true);
+        try {
+            await client.post(`/payouts/${activeChatPayout._id}/query`, { message: chatMessage });
+            setChatMessage("");
+
+            // Refresh data to show new message
+            const { data } = await client.get('/payouts');
+            setPayouts(data);
+
+            // Update the active modal data
+            const updated = data.find(p => p._id === activeChatPayout._id);
+            if (updated) setActiveChatPayout(updated);
+
+        } catch (error) {
+            console.error("Failed to send message", error);
+            alert("Failed to send message: " + (error.response?.data?.message || error.message));
+        } finally {
+            setMsgSending(false);
         }
     };
 
@@ -288,7 +238,7 @@ const AdminPayouts = () => {
                                         <th className="pb-4 text-right">Discount</th>
                                         <th className="pb-4 text-right">Paid (User)</th>
                                         <th className="pb-4 text-right text-red-500">Plat. Fee</th>
-                                        <th className="pb-4 text-right text-green-600">Net Earned</th>
+                                        <th className="pb-4 text-right">Net Earned</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200/50 dark:divide-slate-700/50">
@@ -309,7 +259,17 @@ const AdminPayouts = () => {
                                                 <td className="py-4 text-right text-red-400">-₹{discount}</td>
                                                 <td className="py-4 text-right font-bold text-gray-800 dark:text-gray-200">₹{userPaid}</td>
                                                 <td className="py-4 text-right text-red-500 text-xs">-₹{totalFee.toFixed(1)}</td>
-                                                <td className="py-4 text-right font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/10 rounded-r-lg">₹{p.amount}</td>
+                                                <td className="py-4 text-right flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setActiveChatPayout(p)}
+                                                        className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition relative"
+                                                        title="Chat with User"
+                                                    >
+                                                        <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                                                        {(p.queries?.length > 0 && p.queries[p.queries.length - 1].sender === 'user') && <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>}
+                                                    </button>
+                                                    <span className="font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/10 rounded-r-lg px-2 py-1">₹{p.amount}</span>
+                                                </td>
                                             </tr>
                                         );
                                     })}
@@ -578,7 +538,15 @@ const AdminPayouts = () => {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-5 text-right w-fit">
+                                                <td className="px-8 py-5 text-right w-fit flex justify-end items-center gap-2">
+                                                    <button
+                                                        onClick={() => setActiveChatPayout(p)}
+                                                        className="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 hover:text-indigo-600 dark:hover:text-white transition relative"
+                                                        title="Message History"
+                                                    >
+                                                        <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                                                        {(p.queries?.length > 0 && p.queries[p.queries.length - 1].sender === 'user') && <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>}
+                                                    </button>
                                                     <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 gap-2 shadow-sm">
                                                         <CheckCircleIcon className="h-4 w-4" /> COMPLETED
                                                     </span>
@@ -739,6 +707,42 @@ const AdminPayouts = () => {
 
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* --- CHAT MODAL --- */}
+                {activeChatPayout && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setActiveChatPayout(null)}>
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+                            <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex justify-between items-center">
+                                <div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white">Payout Support</h3>
+                                    <p className="text-xs text-gray-500">Sales ID: {activeChatPayout.transaction?._id?.slice(-6)}</p>
+                                </div>
+                                <button onClick={() => setActiveChatPayout(null)} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 transition"><XCircleIcon className="h-6 w-6 text-gray-500 hover:text-gray-900 dark:hover:text-white" /></button>
+                            </div>
+                            <div className="h-80 overflow-y-auto p-4 space-y-3 bg-white dark:bg-slate-900">
+                                {activeChatPayout.queries?.length === 0 && <p className="text-center text-gray-400 text-sm italic mt-10">No messages yet. Start a conversation.</p>}
+                                {activeChatPayout.queries?.map((q, i) => (
+                                    <div key={i} className={`flex ${q.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${q.sender === 'admin' ? 'bg-indigo-600 text-white rounded-br-none shadow-md' : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-bl-none'}`}>
+                                            <p>{q.message}</p>
+                                            <p className={`text-[10px] mt-1 ${q.sender === 'admin' ? 'text-indigo-200' : 'text-gray-400'}`}>{new Date(q.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <form onSubmit={handleSendQuery} className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex gap-2">
+                                <input
+                                    autoFocus
+                                    value={chatMessage}
+                                    onChange={e => setChatMessage(e.target.value)}
+                                    placeholder="Type a reply..."
+                                    className="flex-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full px-4 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                                <button type="submit" disabled={msgSending} className="p-2 bg-indigo-600 rounded-full text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"><PaperAirplaneIcon className="h-5 w-5" /></button>
+                            </form>
                         </div>
                     </div>
                 )}
