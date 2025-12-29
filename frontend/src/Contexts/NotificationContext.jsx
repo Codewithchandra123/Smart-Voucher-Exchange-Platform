@@ -14,7 +14,7 @@ export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [toast, setToast] = useState(null); // { message, type, id, link }
-    const audioRef = useRef(new Audio('/notification.mp3'));
+    const audioRef = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'));
     const navigate = useNavigate();
 
     // Poll for notifications
