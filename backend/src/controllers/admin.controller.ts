@@ -16,8 +16,7 @@ import { FraudDetectionService } from "../services/fraudDetection.service";
 import { VoucherValidationService } from "../services/voucherValidation.service";
 
 
-// Helper for type safety if needed, or just use `any` for quick prototyping as per existing style
-
+ 
 export const listUsersForVerificationHandler = async (req: Request, res: Response) => {
     // Fetch users who have submitted ID proof or are pending verification
     // Or just all users as requested, but prioritizing those with proofs
