@@ -59,7 +59,8 @@ export const reviewRequestHandler = async (req: Request, res: Response) => {
         const { requestId } = req.params;
         const { action, adminNote, penaltyAmount } = req.body;
 
-        if (!["APPROVE", "REJECT", "REQUIRE_PENALTY"].includes(action)) {
+        const validActions: ("APPROVE" | "REJECT" | "REQUIRE_PENALTY")[] = ["APPROVE", "REJECT", "REQUIRE_PENALTY"];
+        if (!validActions.includes(action as any)) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid action" });
         }
 

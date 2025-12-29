@@ -32,7 +32,7 @@ export const purchaseVoucherHandler = async (req: Request, res: Response) => {
     }
 
     // 1. Secure Authentication & Locking Flow
-    const validation = await VoucherValidationService.validateForUsage(voucherId, userId);
+    const validation = await VoucherValidationService.validateForUsage(voucherId as string, userId as string);
 
     if (!validation.isValid) {
         return res.status(StatusCodes.BAD_REQUEST).json({
