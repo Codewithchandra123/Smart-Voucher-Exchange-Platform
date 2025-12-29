@@ -64,7 +64,7 @@ export const reviewRequestHandler = async (req: Request, res: Response) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid action" });
         }
 
-        const request = await ReactivationService.reviewRequest(adminId, requestId, action as "APPROVE" | "REJECT" | "REQUIRE_PENALTY", adminNote || "", penaltyAmount);
+        const request = await ReactivationService.reviewRequest(adminId, requestId, action as "APPROVE" | "REJECT" | "REQUIRE_PENALTY", (adminNote || "") as string, penaltyAmount);
         res.json(request);
     } catch (error: any) {
         console.error("Review Request Error:", error);
