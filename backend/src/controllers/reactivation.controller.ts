@@ -57,6 +57,10 @@ export const reviewRequestHandler = async (req: Request, res: Response) => {
         if (!adminId) return res.sendStatus(StatusCodes.UNAUTHORIZED);
 
         const { requestId } = req.params;
+        if (!requestId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Request ID is required" });
+        }
+
         const { action, adminNote, penaltyAmount } = req.body;
 
         const validActions: ("APPROVE" | "REJECT" | "REQUIRE_PENALTY")[] = ["APPROVE", "REJECT", "REQUIRE_PENALTY"];
