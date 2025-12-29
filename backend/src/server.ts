@@ -38,7 +38,6 @@ async function startServer() {
   try {
     // Initialize Firebase Admin SDK (Auth)
     initFirebase();
-    console.log("🔥 Firebase initialized");
 
     // Connect MongoDB
     await mongoose.connect(Env.mongoUri);

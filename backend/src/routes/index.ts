@@ -60,6 +60,15 @@ router.get("/health", (_req, res) => {
   });
 });
 
+router.get("/", (_req, res) => {
+  res.json({
+    message: "Welcome to Vouchify API",
+    status: "running",
+    documentation: "/api-docs", // Placeholder if we had docs
+    health_check: "/health"
+  });
+});
+
 router.use("/api/auth", authRouter);
 
 // Public Routes
