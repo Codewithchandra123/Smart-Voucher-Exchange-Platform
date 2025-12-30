@@ -241,7 +241,7 @@ const Contact = () => {
             <div className="grid gap-6">
               {[
                 { icon: LifebuoyIcon, title: "Help Center", desc: "Browse our FAQ for quick answers.", color: "blue", link: "/faq" },
-                { icon: EnvelopeIcon, title: "Email Us", desc: "support@vouchify.com", color: "purple", action: "mailto:support@vouchify.com" },
+                { icon: EnvelopeIcon, title: "Email Us", desc: "tejakancharla77@gmail.com", color: "purple", action: "mailto:tejakancharla77@gmail.com" },
                 { icon: ClockIcon, title: "Working Hours", desc: "Mon-Fri: 9AM - 6PM EST", color: "emerald", action: null }
               ].map((item, idx) => (
                 <motion.div
