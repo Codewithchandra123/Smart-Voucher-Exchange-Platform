@@ -54,12 +54,51 @@ export default function ProfileHeader({ user, onUpdate }) {
         });
     }, [user]);
 
+    // Optimized File Handler with Compression
     const handleFileChange = (e, field) => {
         const file = e.target.files[0];
         if (file) {
+            // Limit initial file check (e.g. 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File is too large. Please upload an image under 10MB.");
+                return;
+            }
+
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, [field]: reader.result }));
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Resize logic: Max dimensional limit (e.g. 1024px)
+                    const MAX_WIDTH = 1024;
+                    const MAX_HEIGHT = 1024;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG at 0.7 quality
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    setFormData(prev => ({ ...prev, [field]: compressedDataUrl }));
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }

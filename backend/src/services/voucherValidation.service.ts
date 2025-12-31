@@ -6,14 +6,16 @@ import { VoucherArchiveModel } from "../models/VoucherArchive";
 
 // Regex patterns for common brands
 const BRAND_PATTERNS: Record<string, RegExp> = {
-    "amazon": /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/i, // Typical Amazon Gift Card format
+    "amazon": /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/i,
     "flipkart": /^[A-Z0-9]{15,16}$/i,
     "myntra": /^[A-Z0-9]{16}$/i,
-    "google_play": /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i,
+    // overly strict google_play removed to allow variations
     "uber": /^[A-Z0-9]{10,12}$/i,
-    "zomato": /^[A-Z0-9]{10}$/i,
-    "swiggy": /^[A-Z0-9]{10}$/i,
-    "default": /^[A-Z0-9-]{8,32}$/i
+    "zomato": /^[A-Z0-9]{10,16}$/i, // Relaxed length
+    "swiggy": /^[A-Z0-9]{10,16}$/i, // Relaxed length
+    // Allow broader set of chars for default: A-Z, 0-9, and common separators like - _ . @
+    // Length 4 to 64 to cover short pins and long tokens
+    "default": /^[A-Z0-9-_@.]{4,64}$/i
 };
 
 const DUMMY_STRINGS = [
