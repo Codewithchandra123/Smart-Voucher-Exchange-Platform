@@ -7,11 +7,34 @@ import {
     BuildingLibraryIcon,
     DevicePhoneMobileIcon,
     CheckCircleIcon,
-    Cog6ToothIcon
+    Cog6ToothIcon,
+    ShieldCheckIcon,
+    ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 
 export default function ProfileSettings() {
     const { user, refreshUser } = useAuth();
+
+    // Security State
+    const [securityState, setSecurityState] = useState({ currentPassword: '', newPassword: '' });
+    const [securityMessage, setSecurityMessage] = useState(null);
+    const [securityLoading, setSecurityLoading] = useState(false);
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setSecurityLoading(true);
+        setSecurityMessage(null);
+        try {
+            await client.post('/auth/change-password', securityState);
+            setSecurityMessage({ type: 'success', text: 'Password changed successfully!' });
+            setSecurityState({ currentPassword: '', newPassword: '' });
+        } catch (error) {
+            setSecurityMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update password' });
+        } finally {
+            setSecurityLoading(false);
+        }
+    };
+
     const [enabled, setEnabled] = useState(false);
 
     // Payout Settings State
@@ -63,6 +86,10 @@ export default function ProfileSettings() {
                     <p className="text-xs text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-wider">Preferences & Payouts</p>
                 </div>
             </div>
+
+
+
+
 
             {/* Payment Details Section */}
             <div>
@@ -227,6 +254,6 @@ export default function ProfileSettings() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

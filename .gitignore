@@ -3,8 +3,9 @@ backend/node_modules/
 frontend/node_modules/
 .env
 backend/.env
+frontend/.env.env
+backend/.env
 frontend/.env
-dist/
 build/
 backend/dist/
 frontend/dist/

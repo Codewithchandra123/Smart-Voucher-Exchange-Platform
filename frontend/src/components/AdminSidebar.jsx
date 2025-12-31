@@ -109,13 +109,13 @@ const AdminSidebar = ({ isMobile = false, onClose = () => { } }) => {
     ];
 
     // Removed overflow-hidden to allow tooltips to pop out
-    const baseClass = "flex items-center p-3 mb-2 rounded-xl transition-all duration-300 ease-out group relative backdrop-blur-sm border border-transparent";
+    const baseClass = "flex items-center p-3 mb-2 rounded-xl transition-all duration-300 ease-out group relative border border-transparent";
     const activeClass = "bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 transform scale-[1.02] font-semibold ring-1 ring-white/10";
     const inactiveClass = "text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-slate-800/80 hover:text-indigo-600 dark:hover:text-white hover:pl-4 hover:shadow-sm dark:hover:border-white/5";
 
     return (
         <div
-            className={`bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-r border-gray-200 dark:border-slate-700 h-full flex flex-col transition-all duration-300 ${isMobile ? 'w-full' : isCollapsed ? 'w-20' : 'w-64'}`}
+            className={`bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 h-full flex flex-col transition-all duration-300 ${isMobile ? 'w-full' : isCollapsed ? 'w-20' : 'w-64'}`}
         >
             {/* Header */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-slate-800 shrink-0">

@@ -23,6 +23,7 @@ router.put("/me", authMiddleware, updateMeHandler);
 router.post("/me/saved-vouchers", authMiddleware, toggleSaveVoucher);
 
 // Recovery
+
 router.post("/forgot-password", forgotPasswordHandler);
 router.post("/verify-otp", verifyOtpHandler);
 router.post("/reset-password", resetPasswordHandler);
