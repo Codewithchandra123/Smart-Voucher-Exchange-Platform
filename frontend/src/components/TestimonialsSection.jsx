@@ -62,7 +62,7 @@ const TestimonialsSection = () => {
 
                 return {
                     id: review._id,
-                    quote: review.message,
+                    quote: review.comment || review.message,
                     name: review.user?.displayName || 'Anonymous',
                     email: null, // Privacy
                     role: 'User',
